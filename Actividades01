@@ -1,0 +1,77 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+namespace app {
+    
+    class Tarea {
+    private:
+        string nombre; 
+        string curso;
+    public:
+        Tarea(string n, string c) : nombre(n), curso(c) {}
+        string getNombre() const { return nombre; }
+        void mostrar() const { cout << "  - " << nombre << " (" << curso << ")\n"; }
+    };
+    
+    class Notificador {
+    public:
+        virtual ~Notificador() {}
+        virtual void notificar(const string& msg) = 0;
+    };
+    
+    class NotificadorConsola : public Notificador {
+    public:
+        void notificar(const string& msg) override {
+            cout << "  [Consola] " << msg << "\n";
+        }
+    };
+    
+    class GestorTareas {
+    private:
+        vector<Tarea> tareas;
+        Notificador* notificador;
+    public:
+        GestorTareas(Notificador* n) : notificador(n) {}
+        
+        void agregarTarea(const Tarea& t) {
+            tareas.push_back(t);
+            notificador->notificar("Tarea '" + t.getNombre() + "' agregada");
+        }
+        
+        void mostrarTareas() const {
+            for (const auto& t : tareas) t.mostrar();
+        }
+    };
+    
+    class Sistema {
+    private:
+        Notificador* notificador;
+        GestorTareas gestor;
+    public:
+        Sistema() : notificador(new NotificadorConsola()), gestor(notificador) {}
+        ~Sistema() { delete notificador; }
+        
+        GestorTareas& obtenerGestor() { return gestor; }
+    };
+}
+
+int main() {
+    cout << "  Gestor de Tareas\n";
+    
+    app::Sistema sistema;
+    app::GestorTareas& gestor = sistema.obtenerGestor();
+    
+    cout << "Agregando tareas:\n";
+    gestor.agregarTarea(app::Tarea("Proyecto Final", "LP2"));
+    gestor.agregarTarea(app::Tarea("Practica de Estructuras", "Estructuras de Datos"));
+    gestor.agregarTarea(app::Tarea("Parcial 1", "Bases de Datos"));
+    
+    cout << "\nTareas registradas:\n";
+    gestor.mostrarTareas();
+    
+    cout << "Listo!\n";
+    
+    return 0;
+}
